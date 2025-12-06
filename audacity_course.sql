@@ -96,4 +96,60 @@ ON o.account_id = a.id
 WHERE o.occurred_at BETWEEN '2015-01-01' AND '2015-12-31'
 ORDER BY o.occurred_at ASC;
 
+----GROUP BY QUIZ
+
+--Question #2
+SELECT a.name AS name,
+       sum(o.total_amt_usd) AS total_sales
+FROM accounts a
+JOIN orders o
+ON a.id = o.account_id
+GROUP BY name
+ORDER BY name;
+
+--QUESTION 3
+SELECT w.occurred_at AS date,
+       w.channel,
+       a.name
+FROM accounts a
+JOIN web_events w
+ON w.account_id = a.id
+GROUP BY date, w.channel, a.name
+ORDER BY date DESC
+LIMIT 1;
+
+--QUESTION 4
+SELECT w.channel,
+       count(w.channel)
+FROM web_events w
+GROUP BY w.channel
+ORDER BY count(w.channel) DESC;
+
+--QUESTION 5
+SELECT a.primary_poc AS contact,
+       a.name,
+       w.occurred_at AS date
+FROM accounts a
+JOIN web_events w
+ON w.account_id = a.id
+GROUP BY contact, a.name, date
+ORDER BY date ASC
+LIMIT 1;
+
+--QUESTION 6
+SELECT a.name, MIN(o.total_amt_usd) AS min_order
+FROM accounts a
+JOIN orders o
+ON a.id = o.account_id
+GROUP BY name
+ORDER BY min_order;
+
+--question 7
+SELECT count(s.name) AS reps,
+       r.name AS region
+FROM sales_reps s
+JOIN region r
+ON s.region_id = r.id
+GROUP BY region
+ORDER BY reps ASC;
 
