@@ -297,3 +297,44 @@ ON a.id = w.account_id
 GROUP BY w.channel
 ORDER BY channel_ct DESC;
 
+--DATE FUNCTIONS
+
+--Q1
+SELECT DATE_PART('year', o.occurred_at) AS year,
+       SUM(o.total_amt_usd) AS sales
+FROM orders o
+GROUP BY year
+ORDER BY sales DESC;
+
+--Q2
+SELECT DATE_PART('month', o.occurred_at) AS month,
+       SUM(o.total_amt_usd) AS sales
+FROM orders o
+GROUP BY month
+ORDER BY sales DESC;
+
+--q3
+SELECT DATE_PART('year', o.occurred_at) AS year,
+       SUM(o.total) AS total
+FROM orders o
+GROUP BY year
+ORDER BY total DESC;
+
+--q4
+SELECT DATE_PART('month', o.occurred_at) AS month,
+       SUM(o.total_amt_usd) AS total
+FROM orders o
+GROUP BY month
+ORDER BY total DESC;
+
+--q5
+SELECT DATE_TRUNC('month', o.occurred_at) ord_date, SUM(o.gloss_amt_usd) tot_spent
+FROM orders o 
+JOIN accounts a
+ON a.id = o.account_id
+WHERE a.name = 'Walmart'
+GROUP BY 1
+ORDER BY 2 DESC
+LIMIT 1;
+
+
