@@ -153,3 +153,53 @@ ON s.region_id = r.id
 GROUP BY region
 ORDER BY reps ASC;
 
+--AVG/COUNT/MIN/MAX
+
+--Q#1
+SELECT a.name,
+       AVG(o.standard_qty) AS standard,
+       AVG(o.gloss_qty) AS glossy,
+       AVG(o.poster_qty) AS poster
+FROM orders o
+JOIN accounts a
+ON a.id = o.id
+GROUP BY name;
+
+--Q#2
+SELECT a.name,
+       AVG(o.standard_amt_usd) AS standard,
+       AVG(o.gloss_amt_usd) AS glossy,
+       AVG(o.poster_amt_usd) AS poster
+FROM orders o
+JOIN accounts a
+ON a.id = o.id
+GROUP BY name;
+
+--Q3
+SELECT s.name,
+       w.channel,
+       COUNT(w.channel) AS channel_ct
+FROM sales_reps s
+JOIN accounts a
+ON a.sales_rep_id = s.id
+JOIN web_events w
+ON w.account_id = a.id
+GROUP BY s.name, w.channel
+ORDER BY channel_ct DESC;
+
+--Q4
+SELECT r.name,
+       w.channel,
+       COUNT(w.channel) AS channel_ct
+FROM region r
+JOIN sales_reps s
+ON r.id = s.region_id
+JOIN accounts a
+ON a.sales_rep_id = s.id
+JOIN web_events w
+ON w.account_id = a.id
+GROUP BY r.name, w.channel
+ORDER BY channel_ct DESC;
+
+
+
