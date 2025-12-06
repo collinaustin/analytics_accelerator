@@ -201,5 +201,99 @@ ON w.account_id = a.id
 GROUP BY r.name, w.channel
 ORDER BY channel_ct DESC;
 
+--HAVING SQL STATEMENTS--
 
+--Q1
+SELECT s.id, s.name, COUNT(*) AS num_accts
+FROM sales_reps s
+JOIN accounts a
+ON s.id = a.sales_rep_id
+GROUP BY s.id, s.name
+HAVING COUNT(*) > 5
+ORDER BY num_accts DESC;
+
+--Q2
+SELECT a.id, a.name, COUNT(*) AS orders
+FROM accounts a
+JOIN orders o
+ON a.id = o.account_id
+GROUP BY a.id, a.name
+HAVING COUNT(*) > 20
+ORDER BY orders DESC;
+
+--q3
+SELECT a.id, a.name, COUNT(*) AS orders
+FROM accounts a
+JOIN orders o
+ON a.id = o.account_id
+GROUP BY a.id, a.name
+HAVING COUNT(*) > 20
+ORDER BY orders DESC
+LIMIT 1;
+
+--q4
+SELECT a.id, a.name, SUM(o.total_amt_usd) AS total
+FROM accounts a
+JOIN orders o
+ON a.id = o.account_id
+GROUP BY a.id, a.name
+HAVING SUM(o.total_amt_usd) > 30000
+ORDER BY total DESC;
+
+--Q5
+SELECT a.id, a.name, SUM(o.total_amt_usd) AS total
+FROM accounts a
+JOIN orders o
+ON a.id = o.account_id
+GROUP BY a.id, a.name
+HAVING SUM(o.total_amt_usd) < 1000
+ORDER BY total DESC;
+
+--Q6
+SELECT a.id, a.name, SUM(o.total_amt_usd) AS total
+FROM accounts a
+JOIN orders o
+ON a.id = o.account_id
+GROUP BY a.id, a.name
+ORDER BY total DESC
+LIMIT 1;
+
+
+--Q7
+SELECT a.id, a.name, SUM(o.total_amt_usd) AS total
+FROM accounts a
+JOIN orders o
+ON a.id = o.account_id
+GROUP BY a.id, a.name
+ORDER BY total ASC
+LIMIT 1;
+
+--Q8
+SELECT a.id, a.name, COUNT(*) AS channel_ct
+FROM accounts a
+JOIN web_events w
+ON a.id = w.account_id
+WHERE channel = 'facebook'
+GROUP BY a.id, a.name
+HAVING COUNT(*) > 6
+ORDER BY channel_ct DESC;
+
+--Q9
+SELECT a.id, a.name, COUNT(*) AS channel_ct
+FROM accounts a
+JOIN web_events w
+ON a.id = w.account_id
+WHERE channel = 'facebook'
+GROUP BY a.id, a.name
+HAVING COUNT(*) > 6
+ORDER BY channel_ct DESC
+LIMIT 1;
+
+--Q10
+SELECT w.channel, COUNT(*) AS channel_ct
+FROM accounts a
+JOIN web_events w
+ON a.id = w.account_id
+GROUP BY w.channel
+ORDER BY channel_ct DESC;
 
