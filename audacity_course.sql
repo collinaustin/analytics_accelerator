@@ -338,3 +338,77 @@ ORDER BY 2 DESC
 LIMIT 1;
 
 
+--CASE FUNCTIONS--
+
+--Q1
+SELECT o.id, o.total_amt_usd AS total,
+       CASE WHEN o.total_amt_usd > 3000 THEN 'Large' ELSE 'Small'
+       END AS order_level
+FROM orders o;
+
+--Q2
+SELECT COUNT(*), 
+   CASE 
+       WHEN o.total >= 2000 THEN 'At least 2000'
+       WHEN o.total BETWEEN 1000 AND 2000 THEN 'Betweeen 1000 and 2000'
+       WHEN o.total < 1000 THEN 'Less than 1000'
+   END AS order_level
+FROM orders o
+GROUP BY 2
+ORDER BY 1;
+
+--q3
+SELECT a.name, SUM(o.total_amt_usd),
+  CASE
+    WHEN SUM(o.total_amt_usd) > 200000 THEN 'Top Level'
+    WHEN SUM(o.total_amt_usd) > 100000 THEN 'Middle Level'
+    WHEN SUM(o.total_amt_usd) < 100000 THEN 'Lowest Level'
+  END AS level
+FROM accounts a
+JOIN orders o
+ON a.id = o.account_id
+GROUP BY 1
+ORDER BY level desc;
+
+--q4
+SELECT a.name, SUM(o.total_amt_usd) AS total_spend, o.occurred_at,
+  CASE
+    WHEN SUM(o.total_amt_usd) > 200000 THEN 'Top Level'
+    WHEN SUM(o.total_amt_usd) > 100000 THEN 'Middle Level'
+    ELSE 'Lowest Level'
+  END AS level
+FROM orders o
+JOIN accounts a
+ON a.id = o.account_id
+WHERE o.occurred_at > '2015-12-31'
+GROUP BY a.name, o.occurred_at
+ORDER BY 2 DESC;
+
+--q5
+SELECT s.name, COUNT(*) AS orders, 
+ CASE
+   WHEN COUNT(*) > 200 THEN 'top'
+   ELSE 'not'
+  END AS sales_rep_rank
+FROM sales_reps s
+JOIN accounts a
+ON s.id = a.sales_rep_id
+JOIN orders o
+ON a.id = o.account_id
+GROUP BY s.name
+ORDER BY 2 DESC;
+
+--q6
+SELECT s.name, COUNT(*) AS orders, SUM(total_amt_usd) AS dollar_sales,
+ CASE
+   WHEN COUNT(*) > 200 OR SUM(total_amt_usd) > 750000 THEN 'top'
+   WHEN COUNT(*) > 150 OR SUM(total_amt_usd) > 500000 THEN 'middle'
+   ELSE 'low'
+ END AS sales_rep_rank
+FROM sales_reps s
+JOIN accounts a
+ON s.id = a.sales_rep_id
+JOIN orders o
+ON a.id = o.account_id
+GROUP BY s.name
+ORDER BY 3 DESC;
