@@ -412,3 +412,178 @@ JOIN orders o
 ON a.id = o.account_id
 GROUP BY s.name
 ORDER BY 3 DESC;
+
+--SUBQUERIES!!!--
+
+SELECT channel, AVG(num_events) AS avg_event
+FROM
+(SELECT DATE_TRUNC('day', w.occurred_at) AS day, w.channel, COUNT(*) AS num_events
+FROM web_events w
+GROUP BY 1,2) sub
+GROUP BY 1
+ORDER BY 2 DESC;
+
+SELECT AVG(o.standard_qty) AS avg_standard,
+       AVG(o.gloss_qty) AS avg_gloss,
+       AVG(o.poster_qty) AS avg_poster,
+       SUM(total_amt_usd) AS total
+FROM orders o
+WHERE DATE_TRUNC('month', o.occurred_at) =
+     (SELECT DATE_TRUNC('month',MIN(o.occurred_at)) AS date
+      FROM orders o);
+
+SELECT s.name AS rep_name, r.name AS region, SUM(o.total_amt_usd) AS total_amt
+FROM sales_reps s
+JOIN region r
+ON s.region_id = r.id
+JOIN accounts a
+ON s.id = a.sales_rep_id
+JOIN orders o
+ON o.account_id = a.id
+GROUP BY rep_name, region
+ORDER BY 3 DESC;
+
+SELECT region, MAX(total_amt) total_amt
+        FROM(SELECT s.name rep_name, r.name region,     
+        SUM(o.total_amt_usd) total_amt
+        FROM sales_reps s
+        JOIN region r
+        ON s.region_id = r.id
+        JOIN accounts a
+        ON s.id = a.sales_rep_id
+        JOIN orders o
+        ON o.account_id = a.id
+        GROUP BY rep_name, region) t1
+GROUP BY 1;
+
+SELECT t3.rep_name, t3.region_name, t3.total_amt
+FROM(SELECT region_name, MAX(total_amt) total_amt
+       FROM(SELECT s.name rep_name, r.name region_name,     
+       SUM(o.total_amt_usd) total_amt
+       FROM sales_reps s
+       JOIN region r
+       ON s.region_id = r.id
+       JOIN accounts a
+       ON s.id = a.sales_rep_id
+       JOIN orders o
+       ON o.account_id = a.id
+       GROUP BY 1,2) t1
+     GROUP BY 1) t2
+JOIN(SELECT s.name rep_name, r.name region_name,  
+      SUM(o.total_amt_usd) total_amt
+      FROM sales_reps s
+      JOIN region r
+      ON s.region_id = r.id
+      JOIN accounts a
+      ON s.id = a.sales_rep_id
+      JOIN orders o
+      ON o.account_id = a.id
+      GROUP BY 1,2
+      ORDER BY 3 DESC) t3
+ON t3.region_name = t2.region_name AND t3.total_amt = t2.total_amt;
+
+SELECT r.name region, COUNT(o.total) total_orders
+FROM region r
+JOIN sales_reps s
+ON r.id = s.region_id
+JOIN accounts a
+ON a.sales_rep_id = s.id
+JOIN orders o
+ON o.account_id = a.id
+GROUP BY 1
+HAVING SUM(o.total_amt_usd) = (
+   SELECT MAX(total_sales) total_sales
+    FROM(SELECT r.name AS region, SUM(o.total_amt_usd) AS total_sales 
+       FROM region r
+       JOIN sales_reps s
+       ON r.id = s.region_id
+       JOIN accounts a
+       ON a.sales_rep_id = s.id
+       JOIN orders o
+       ON o.account_id = a.id
+       GROUP BY 1) t1
+  );
+
+SELECT COUNT(*)
+FROM(SELECT a.name
+FROM accounts a
+JOIN orders o
+ON a.id = o.account_id
+GROUP BY 1
+HAVING SUM(o.total) > 
+       (
+              SELECT total_orders
+              FROM (
+                     SELECT a.name account_name,    
+                            SUM(o.standard_qty) standard_qty_amt,    
+                            SUM(o.total) total_orders
+                     FROM accounts a
+                     JOIN orders o
+                     ON a.id = o.account_id
+                     GROUP BY 1
+                     ORDER BY 2 DESC
+                     LIMIT 1
+                     ) t1
+       )
+) t2;
+
+SELECT a.name,
+       w.account_id, 
+       w.channel,
+       COUNT(w.channel)
+FROM web_events w
+JOIN accounts a
+ON w.account_id = a.id
+WHERE w.account_id = (
+       SELECT id
+       FROM (
+              SELECT a.id,
+                     a.name,  
+                     SUM(o.total_amt_usd) total
+              FROM orders o
+              JOIN accounts a
+              ON a.id = o.account_id
+              GROUP BY 1, 2
+              ORDER BY 3 DESC
+              LIMIT 1
+              ) top_customer 
+       )
+GROUP BY 1, 2, 3
+ORDER BY 4 DESC;
+       
+SELECT AVG(total)
+FROM
+       (
+       SELECT a.name,
+              a.id,
+              SUM(o.total_amt_usd) AS total
+       FROM accounts a
+       JOIN orders o
+       ON a.id = o.account_id
+       GROUP BY 1, 2
+       ORDER BY 3 DESC
+       LIMIT 10
+       )
+;
+
+SELECT AVG(SUM(o.total_amt_usd)) AS avg_amt
+FROM orders o;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
