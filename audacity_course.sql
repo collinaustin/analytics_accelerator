@@ -581,19 +581,163 @@ FROM
        ) t1
 ;
 
+--1ST WITH STATEMENT QUERY
+WITH t1 AS 
+       (
+       SELECT s.name rep_name, 
+              r.name region_name,     
+              SUM(o.total_amt_usd) total_amt
+       FROM sales_reps s
+       JOIN region r
+       ON s.region_id = r.id
+       JOIN accounts a
+       ON s.id = a.sales_rep_id
+       JOIN orders o
+       ON o.account_id = a.id
+       GROUP BY 1,2
+       ),
+t2 AS
+       (
+       SELECT region_name, 
+              MAX(total_amt) total_amt
+       FROM t1
+       GROUP BY 1
+       )
+       
+SELECT t1.rep_name,
+       t1.region_name,
+       t1.total_amt
+FROM t1
+JOIN t2
+ON t1.region_name = t2.region_name AND t1.total_amt = t2.total_amt;
+        
+--2ND WITH STATEMENT QUERY
+WITH t1 AS 
+       (
+       SELECT r.name AS region,
+       SUM(o.total_amt_usd) AS total_sales 
+       FROM region r
+       JOIN sales_reps s
+       ON r.id = s.region_id
+       JOIN accounts a
+       ON a.sales_rep_id = s.id
+       JOIN orders o
+       ON o.account_id = a.id
+       GROUP BY 1
+       ),       
+t2 AS
+       (SELECT MAX(total_sales) total_sales
+       FROM t1
+       )
+       
+SELECT r.name region, 
+       COUNT(o.total) total_orders
+FROM region r
+JOIN sales_reps s
+ON r.id = s.region_id
+JOIN accounts a
+ON a.sales_rep_id = s.id
+JOIN orders o
+ON o.account_id = a.id
+GROUP BY 1
+HAVING SUM(o.total_amt_usd) = 
+       (
+       SELECT *
+       FROM T2
+       );
 
+--3RD WITH STATEMENT SUBQUERY
 
+WITH t1 AS
+       (
+       SELECT a.name account_name,    
+       SUM(o.standard_qty) standard_qty_amt,    
+       SUM(o.total) total_orders
+       FROM accounts a
+       JOIN orders o
+       ON a.id = o.account_id
+       GROUP BY 1
+       ORDER BY 2 DESC
+       LIMIT 1
+       ),
+t2 AS (
+       SELECT a.name
+       FROM accounts a
+       JOIN orders o
+       ON a.id = o.account_id
+       GROUP BY 1
+       HAVING SUM(o.total) > 
+              (
+              SELECT total_orders
+              FROM t1
+              )
+       )
 
+SELECT COUNT(*)
+FROM t2;
+    
 
+--4TH WITH STATEMENT SUBQUERY
 
+WITH t1 AS
+       (
+       SELECT a.id,
+              a.name,  
+              SUM(o.total_amt_usd) total
+       FROM orders o
+       JOIN accounts a
+       ON a.id = o.account_id
+       GROUP BY 1, 2
+       ORDER BY 3 DESC
+       LIMIT 1
+       )
 
+SELECT a.name,
+       w.account_id, 
+       w.channel,
+       COUNT(w.channel)
+FROM web_events w
+JOIN accounts a
+ON w.account_id = a.id
+WHERE w.account_id = 
+       (SELECT id
+       FROM t1
+       )
+GROUP BY 1, 2, 3
+ORDER BY 4 DESC;
 
+---6TH WITH STATEMENT SUBQUERY
 
+SELECT AVG(avg_amt)
+FROM 
+       (
+       SELECT o.account_id,
+       AVG(o.total_amt_usd) AS avg_amt
+       FROM orders o
+       GROUP BY 1
+       HAVING AVG(o.total_amt_usd) >    
+              (
+              SELECT AVG(o.total_amt_usd) AS avg_all
+              FROM orders o
+              )
+       ) t1
+;
 
-
-
-
-
+WITH t1 AS 
+       (SELECT o.account_id,
+       AVG(o.total_amt_usd) AS avg_amt
+       FROM orders o
+       GROUP BY 1
+       HAVING AVG(o.total_amt_usd) >    
+              (
+              SELECT AVG(o.total_amt_usd) AS avg_all
+              FROM orders o
+              )
+       )
+SELECT AVG(avg_amt)
+FROM t1
+;
+               
 
 
 
