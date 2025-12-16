@@ -566,9 +566,19 @@ FROM
        )
 ;
 
-SELECT AVG(SUM(o.total_amt_usd)) AS avg_amt
-FROM orders o;
-
+SELECT AVG(avg_amt)
+FROM
+       (
+       SELECT AVG(o.total_amt_usd) AS avg_amt
+       FROM orders o
+       )
+HAVING AVG(o.total_amt_usd) >    
+       (
+       SELECT AVG(o.total_amt_usd) AS avg_amt
+       FROM orders o
+       )
+;
+       
 
 
 
