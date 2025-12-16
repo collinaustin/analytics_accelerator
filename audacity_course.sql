@@ -567,18 +567,19 @@ FROM
 ;
 
 SELECT AVG(avg_amt)
-FROM
+FROM 
        (
-       SELECT AVG(o.total_amt_usd) AS avg_amt
+       SELECT o.account_id,
+       AVG(o.total_amt_usd) AS avg_amt
        FROM orders o
-       )
-HAVING AVG(o.total_amt_usd) >    
-       (
-       SELECT AVG(o.total_amt_usd) AS avg_amt
-       FROM orders o
-       )
+       GROUP BY 1
+       HAVING AVG(o.total_amt_usd) >    
+              (
+              SELECT AVG(o.total_amt_usd) AS avg_all
+              FROM orders o
+              )
+       ) t1
 ;
-       
 
 
 
